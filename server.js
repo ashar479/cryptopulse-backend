@@ -20,15 +20,19 @@ app.post('/upload', async (req, res) => {
     return res.status(400).json({ error: 'No records array provided.' });
   }
   try {
+    // Generate a unique filename using timestamp
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `cryptopulse-investments-${timestamp}.json`;
+
     const result = await s3
       .putObject({
         Bucket: BUCKET,
-        Key: 'cryptopulse-investments.json', // Single file for demo
+        Key: filename, // Use the unique filename
         Body: JSON.stringify(records, null, 2),
         ContentType: 'application/json',
       })
       .promise();
-    res.json({ message: 'Uploaded to S3!', etag: result.ETag });
+    res.json({ message: 'Uploaded to S3!', filename, etag: result.ETag });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Upload failed.' });
